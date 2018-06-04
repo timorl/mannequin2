@@ -109,7 +109,7 @@ for env in $(ls benchmarks/results); do
         [ -e "$TMPDIR/plots/$env" ] || \
             echo "# steps reward variant" > "$TMPDIR/plots/$env"
         VARIANT="${dir##*/}"
-        [ "x${VARIANT::2}" != x__ ] || VARIANT="${VARIANT:2}_new"
+        [ "x${VARIANT::2}" != x__ ] || VARIANT="${VARIANT:2}"
         cat $(find "$dir" -maxdepth 1 -type f -name '*.out') | \
             grep -v '^#' | \
             while read -r steps reward x; do

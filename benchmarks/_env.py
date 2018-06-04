@@ -97,6 +97,38 @@ def build_env():
             self._step = do_step
             self._reset = do_reset
 
+    class AxisOfEval(gym.Env):
+        def __init__(self, width=20):
+            self.action_space = gym.spaces.Discrete(2)
+            self.observation_space = gym.spaces.Box(low=-width, high=width, shape=(1,))
+            self.width = width
+        def _reset(self):
+            self.s = 0
+            self.counter = 0
+            return (self.s,)
+        def _step(self, action):
+            def _reward(s):
+                return 1 - 1 /(20*(1 + s**2))
+            self.counter += 1
+            self.s += (2*action - 1)
+            return (self.s,), _reward(self.s), self.counter > self.width, None
+
+    class AxisOfEvalMarkov(gym.Env):
+        def __init__(self, width=20):
+            self.action_space = gym.spaces.Discrete(2)
+            self.observation_space = gym.spaces.Box(low=np.array([-width,0]), high=np.array([width,width]))
+            self.width = width
+        def _reset(self):
+            self.s = 0
+            self.counter = 0
+            return (self.s, self.counter)
+        def _step(self, action):
+            def _reward(s):
+                return 1 - 1 /(20*(1 + s**2))
+            self.counter += 1
+            self.s += (2*action - 1)
+            return (self.s, self.counter), _reward(self.s), self.counter > self.width, None
+
     configs = {
         "cartpole": lambda: TrackedEnv(gym.make("CartPole-v1"), max_steps=40000),
         "acrobot": lambda: TrackedEnv(gym.make("Acrobot-v1"), max_steps=80000),
@@ -104,6 +136,10 @@ def build_env():
         "dragcar": lambda: TrackedEnv(DragCar(gym.make("MountainCar-v0")), max_steps=80000, max_rew=200),
         "walker": lambda: TrackedEnv(gym.make("BipedalWalker-v2"), max_rew=300),
         "lander": lambda: TrackedEnv(gym.make("LunarLanderContinuous-v2")),
+        "axisOfEval": lambda: TrackedEnv(AxisOfEval(), max_steps=80000),
+        "axisOfEval200": lambda: TrackedEnv(AxisOfEval(width=200), max_steps=80000),
+        "axisOfEvalMarkov": lambda: TrackedEnv(AxisOfEvalMarkov(), max_steps=80000),
+        "axisOfEvalMarkov200": lambda: TrackedEnv(AxisOfEvalMarkov(width=200), max_steps=80000),
     }
 
     if "ENV" in os.environ:
