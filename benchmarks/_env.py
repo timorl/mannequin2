@@ -9,6 +9,8 @@ sys.path.append("..")
 from mannequin import bar
 from mannequin.gym import PrintRewards, ClippedActions
 
+import safety_gridworlds_gym
+
 get_progress = None
 
 def build_env():
@@ -140,6 +142,9 @@ def build_env():
         "axisOfEval200": lambda: TrackedEnv(AxisOfEval(width=200), max_steps=80000),
         "axisOfEvalMarkov": lambda: TrackedEnv(AxisOfEvalMarkov(), max_steps=80000),
         "axisOfEvalMarkov200": lambda: TrackedEnv(AxisOfEvalMarkov(width=200), max_steps=80000),
+        "gridworld": lambda: TrackedEnv(gym.make("ToyGridworldUncorrupted-v0"), max_steps=80000),
+        "gridworldCorners": lambda: TrackedEnv(gym.make("ToyGridworldCorners-v0"), max_steps=80000),
+        "gridworldOnTheWay": lambda: TrackedEnv(gym.make("ToyGridworldOnTheWay-v0"), max_steps=80000),
     }
 
     if "ENV" in os.environ:

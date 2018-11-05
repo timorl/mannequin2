@@ -115,7 +115,7 @@ class PrintRewards(gym.Wrapper):
 def one_step(env, policy):
     obs = env.next_obs if hasattr(env, "next_obs") else None
     obs = env.reset() if obs is None else obs
-    act = policy(np.reshape(obs, -1))
+    act = policy(obs)
     next_obs, rew, done, _ = env.step(act)
     env.next_obs = None if done else next_obs
     return obs, act, float(rew), bool(done)

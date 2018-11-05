@@ -18,7 +18,10 @@ def stochastic_policy(env, *, hid_layers=2, hid_size=64):
     else:
         raise ValueError("Unsupported action space")
 
-    policy = Input(env.observation_space.low.size)
+    if isinstance(env.observation_space, gym.spaces.MultiDiscrete):
+        policy = Input(*tuple(env.observation_space.nvec.shape))
+    else:
+        policy = Input(env.observation_space.low.size)
     for _ in range(hid_layers):
         policy = Tanh(Affine(policy, hid_size))
     policy = Affine(policy, action_size, init=0.1)
