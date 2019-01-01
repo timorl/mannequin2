@@ -19,9 +19,9 @@ class ClippedActions(gym.Wrapper):
             action = np.asarray(action, dtype=np.float32)
             action = action.reshape(low.shape)
             action = np.clip(action, -1.0, 1.0) * 0.5 + 0.5
-            return self.env._step(diff * action + low)
+            return self.env.step(diff * action + low)
 
-        self._step = do_step
+        self.step = do_step
         self.action_space = gym.spaces.Box(-1.0, 1.0, low.shape)
 
 class UnboundedActions(gym.Wrapper):
@@ -38,9 +38,9 @@ class UnboundedActions(gym.Wrapper):
             action = np.asarray(action, dtype=np.float32)
             action = action.reshape(low.shape)
             action = np.abs((action - 1.0) % 4.0 - 2.0) * 0.5
-            return self.env._step(diff * action + low)
+            return self.env.step(diff * action + low)
 
-        self._step = do_step
+        self.step = do_step
         self.action_space = gym.spaces.Box(-np.inf, np.inf, low.shape)
 
 class ArgmaxActions(gym.Wrapper):
@@ -53,9 +53,9 @@ class ArgmaxActions(gym.Wrapper):
         def do_step(action):
             action = np.asarray(action, dtype=np.float32)
             action = action.reshape((dims,))
-            return self.env._step(np.argmax(action))
+            return self.env.step(np.argmax(action))
 
-        self._step = do_step
+        self.step = do_step
         self.action_space = gym.spaces.Box(0.0, 1.0, (dims,))
 
 class NormalizedObservations(gym.Wrapper):
@@ -66,19 +66,19 @@ class NormalizedObservations(gym.Wrapper):
         normalize = RunningNormalize(self.env.observation_space.shape)
 
         def do_step(action):
-            obs, reward, done, info = self.env._step(action)
+            obs, reward, done, info = self.env.step(action)
             obs = normalize(obs)
             obs = np.clip(obs, -5.0, 5.0)
             return obs, reward, done, info
 
         def do_reset():
-            obs = self.env._reset()
+            obs = self.env.reset()
             obs = normalize(obs)
             obs = np.clip(obs, -5.0, 5.0)
             return obs
 
-        self._step = do_step
-        self._reset = do_reset
+        self.step = do_step
+        self.reset = do_reset
         self.get_mean = normalize.get_mean
         self.get_var = normalize.get_var
         self.get_std = normalize.get_std
@@ -92,7 +92,7 @@ class PrintRewards(gym.Wrapper):
         mean_rew = 0.0
         def do_step(action):
             nonlocal ep_rew, finished, total_steps, mean_rew
-            obs, reward, done, info = self.env._step(action)
+            obs, reward, done, info = self.env.step(action)
             assert ep_rew is not None
             ep_rew += reward
             total_steps += 1
@@ -108,9 +108,9 @@ class PrintRewards(gym.Wrapper):
         def do_reset():
             nonlocal ep_rew
             ep_rew = 0.0
-            return self.env._reset()
-        self._step = do_step
-        self._reset = do_reset
+            return self.env.reset()
+        self.step = do_step
+        self.reset = do_reset
 
 def one_step(env, policy):
     obs = env.next_obs if hasattr(env, "next_obs") else None

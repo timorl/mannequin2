@@ -42,7 +42,7 @@ def build_env():
                 if finished_steps % video_every == video_every // 2:
                     video_wanted = True
                 return self.env.step(action)
-            self._step = do_step
+            self.step = do_step
 
             def pop_wanted(*_):
                 nonlocal video_wanted
@@ -86,48 +86,48 @@ def build_env():
                     self.unwrapped.state[0] * 0.99,
                     self.unwrapped.state[1]
                 )
-                return self.env._step(action)
+                return self.env.step(action)
             def do_reset():
-                self.env._reset()
+                self.env.reset()
                 self.unwrapped.state = (
                     np.random.choice(np.array([-0.4, 0.4]) - np.pi/6),
                     0
                 )
                 return np.array(self.unwrapped.state)
-            self._step = do_step
-            self._reset = do_reset
+            self.step = do_step
+            self.reset = do_reset
 
     class AxisOfEval(gym.Env):
         def __init__(self, width=20):
             self.action_space = gym.spaces.Discrete(2)
             self.observation_space = gym.spaces.Box(low=-width, high=width, shape=(1,))
             self.width = width
-        def _reset(self):
+        def reset(self):
             self.s = 0
             self.counter = 0
             return (self.s,)
-        def _step(self, action):
-            def _reward(s):
+        def step(self, action):
+            def reward(s):
                 return 1 - 1 /(20*(1 + s**2))
             self.counter += 1
             self.s += (2*action - 1)
-            return (self.s,), _reward(self.s), self.counter > self.width, None
+            return (self.s,), reward(self.s), self.counter > self.width, None
 
     class AxisOfEvalMarkov(gym.Env):
         def __init__(self, width=20):
             self.action_space = gym.spaces.Discrete(2)
             self.observation_space = gym.spaces.Box(low=np.array([-width,0]), high=np.array([width,width]))
             self.width = width
-        def _reset(self):
+        def reset(self):
             self.s = 0
             self.counter = 0
             return (self.s, self.counter)
-        def _step(self, action):
-            def _reward(s):
+        def step(self, action):
+            def reward(s):
                 return 1 - 1 /(20*(1 + s**2))
             self.counter += 1
             self.s += (2*action - 1)
-            return (self.s, self.counter), _reward(self.s), self.counter > self.width, None
+            return (self.s, self.counter), reward(self.s), self.counter > self.width, None
 
     configs = {
         "cartpole": lambda: TrackedEnv(gym.make("CartPole-v1"), max_steps=40000),
