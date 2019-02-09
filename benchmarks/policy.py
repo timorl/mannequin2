@@ -6,7 +6,7 @@ sys.path.append("..")
 
 def stochastic_policy(env, *, hid_layers=2, hid_size=64):
     import gym
-    from mannequin.basicnet import Input, Affine, Tanh
+    from mannequin.basicnet import Input, Affine, LReLU
     from mannequin.distrib import Discrete, Gauss
 
     if isinstance(env.action_space, gym.spaces.Box):
@@ -19,8 +19,9 @@ def stochastic_policy(env, *, hid_layers=2, hid_size=64):
         raise ValueError("Unsupported action space")
 
     policy = Input(env.observation_space.low.size)
+
     for _ in range(hid_layers):
-        policy = Tanh(Affine(policy, hid_size))
+        policy = LReLU(Affine(policy, hid_size))
     policy = Affine(policy, action_size, init=0.1)
     policy = Distribution(policy)
 
@@ -38,7 +39,7 @@ def run():
 
     while get_progress() < 1.0:
         traj = episode(env, policy.sample)
-        traj = traj.discounted(horizon=500)
+        traj = traj.discounted(horizon=5) ### 5 / 50
         traj = traj.modified(rewards=normalize)
         traj = traj.modified(rewards=np.tanh)
 

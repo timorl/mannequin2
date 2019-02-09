@@ -56,6 +56,7 @@ class ArgmaxActions(gym.Wrapper):
             return self.env.step(np.argmax(action))
 
         self.step = do_step
+        self.reset = env.reset
         self.action_space = gym.spaces.Box(0.0, 1.0, (dims,))
 
 class NormalizedObservations(gym.Wrapper):
@@ -112,13 +113,16 @@ class PrintRewards(gym.Wrapper):
         self.step = do_step
         self.reset = do_reset
 
-def one_step(env, policy):
+def one_step(env, policy, *, include_next_obs=False):
     obs = env.next_obs if hasattr(env, "next_obs") else None
     obs = env.reset() if obs is None else obs
     act = policy(np.reshape(obs, -1))
     next_obs, rew, done, _ = env.step(act)
     env.next_obs = None if done else next_obs
-    return obs, act, float(rew), bool(done)
+    if include_next_obs:
+        return obs, act, float(rew), bool(done), next_obs
+    else:
+        return obs, act, float(rew), bool(done)
 
 def episode(env, policy, *, render=False, max_steps=10000):
     env.next_obs = env.reset()

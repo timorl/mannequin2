@@ -130,6 +130,10 @@ def build_plot(input_file, *columns,
     xmin, xmax = minmax(xs[1], xmin, xmax)
     ymin, ymax = minmax(ys[1], ymin, ymax)
 
+    ymargin = .05 * (ymax - ymin)
+    ymin -= ymargin
+    ymax += ymargin
+
     cls_columns = []
     for n, v in columns[2:]:
         v = np.array([str(i) for i in v], dtype=str)
@@ -149,7 +153,7 @@ def build_plot(input_file, *columns,
             if maxv > minv:
                 prop("set_%slim")(minv, maxv)
 
-        prop("set_%slabel")("" if label == "$0" else label)
+        prop("set_%slabel")("" if label == "$0" else label.replace('_', ' '))
 
     def render_ax(ax, *, cls_column=None, pick=slice(None)):
         if cls_column is None:
@@ -164,7 +168,8 @@ def build_plot(input_file, *columns,
                     label=" " + str(cls),
                     **opts
                 )
-            ax.legend(title=cls_column[0], loc="best",
+#            ax.legend(title=cls_column[0], loc="best",
+            ax.legend(loc="best",
                 fancybox=True, framealpha=0.5)
         ax.grid()
         format_ax(lambda prop: getattr(ax, prop % "x"), xs[0], xmin, xmax)
@@ -215,6 +220,7 @@ def run(*args):
 
         import matplotlib
         matplotlib.use('Agg')
+        matplotlib.rcParams.update({'font.size': 22})
 
         build_plot(*args, **opts)
 

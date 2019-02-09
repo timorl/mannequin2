@@ -54,6 +54,13 @@ class Trajectory(object):
                 rewards=mannequin.discounted(rewards, horizon=horizon)
             )
 
+        def cumulative_discounted(*, gamma):
+            return Trajectory(
+                observations=observations,
+                actions=actions,
+                rewards=np.cumsum((rewards * (gamma ** np.arange(len(rewards))))[::-1])[::-1]
+            )
+
         # Public methods
         self.get_length = lambda: length
         self.get_observations = lambda: observations[:]
@@ -61,6 +68,7 @@ class Trajectory(object):
         self.get_rewards = lambda: rewards[:]
         self.modified = modified
         self.discounted = discounted
+        self.cumulative_discounted = cumulative_discounted
 
     def __getattribute__(self, name):
         if name == "observations"[:len(name)]:

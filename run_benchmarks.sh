@@ -36,7 +36,7 @@ ALL_ENVS=$(grep -F 'lambda: TrackedEnv' benchmarks/_env.py | cut -d '"' -f 2 | s
 ENVS=
 while read env; do
     for pattern in "${ENV_PATTERNS[@]}"; do
-        [[ $env == $pattern* ]] && ENVS="$ENVS"$'\n'"$env"
+        [[ $env == $pattern ]] && ENVS="$ENVS"$'\n'"$env"
     done
 done <<<"$ALL_ENVS"
 ENVS=$(sort -u <<<"$ENVS" | grep -v '^$')
@@ -107,7 +107,7 @@ for env in $(ls benchmarks/results); do
     for dir in $(find "benchmarks/results/$env" \
             -mindepth 1 -maxdepth 1 -type d); do
         [ -e "$TMPDIR/plots/$env" ] || \
-            echo "# steps reward variant" > "$TMPDIR/plots/$env"
+            echo "# steps total_reward_per_episode variant" > "$TMPDIR/plots/$env"
         VARIANT="${dir##*/}"
         [ "x${VARIANT::2}" != x__ ] || VARIANT="${VARIANT:2}"
         cat $(find "$dir" -maxdepth 1 -type f -name '*.out') | \
@@ -126,7 +126,7 @@ for plot in $(ls "$TMPDIR/plots"); do
         lander*) PLOT_OPTS=(--mean --ymin=-300 --ymax=300) ;;
         *) PLOT_OPTS=(--mean) ;;
     esac
-    PLOT_FILE="benchmarks/results/__$plot.png" \
+    PLOT_FILE="benchmarks/results/$plot.png" \
         marginal-plot "${PLOT_OPTS[@]}" "$TMPDIR/plots/$plot" \
-            reward steps variant || exit 1
+            total_reward_per_episode steps variant || exit 1
 done
